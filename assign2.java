@@ -29,14 +29,27 @@ public class assign2 {
 			System.out.println ("Error! Customer with id " + cid + " not found in the database");
 		}
 		else {
-			System.out.println ("Customer with id " + cid + " is in the database");
-			System.out.println ("Customer id: " + cid);
+			System.out.println ("Customer id: " + custID);
 			System.out.println ("Customer name: " + custName);
 			System.out.println ("Customer city: " + custCity);
 			System.out.println ();
 			fetch_categories();
+
+			System.out.println ();
+			System.out.print ("Enter category: ");
+			String cat = scan.next();
+			System.out.print ("Enter title: ");
+			String title = scan.next();
+			find_book (title, cat);
+
 		}	
 
+		try {
+			conDB.close();
+		}
+		catch (Exception e) {
+			System.out.println (e.toString());
+		}
 	}
 
 	public static boolean find_customer(int cid) {
@@ -49,21 +62,24 @@ public class assign2 {
 		queryText = 
 					"SELECT cid, name, city " +
 					"FROM yrb_customer " +
-					"WHERE cid = " + cid;
+					"WHERE cid = ?";
 
 		try {
 			querySt = conDB.prepareStatement (queryText);	
+			querySt.setInt(1, cid);
 			answers = querySt.executeQuery();
 
 			if (answers.next()) {
 				inDB = true;
-				//custId = answers.getString("cid");
+				custID = answers.getInt("cid");
 				custName = answers.getString("name");
 				custCity = answers.getString("city");
 			}
 			else {
 				inDB = false;
 			}
+			answers.close();
+			querySt.close();
 		}
 		catch (Exception e) {
 			System.out.println(e.toString());
@@ -90,6 +106,46 @@ public class assign2 {
 				category = answers.getString("cat");
 				System.out.println (category);
 			}
+			answers.close();
+			querySt.close();
+		}
+		catch (Exception e) {
+			System.out.println(e.toString());
+		}
+	}
+
+	public static void find_book (String t, String c) {
+		String queryText = "";
+		PreparedStatement querySt = null;
+		ResultSet answers = null;
+
+		String title;
+		int year;
+		String language;
+		int weight;
+
+		queryText = 
+					"SELECT title, year, language, weight " + 
+					"FROM yrb_book " + 
+					"WHERE cat = ? and title = ?";
+
+		try {
+			querySt = conDB.prepareStatement (queryText);
+			querySt.setString(1, c);
+			querySt.setString(2, t);
+			answers = querySt.executeQuery();
+
+			System.out.println(answers.toString());
+			while (answers.next()) {
+				title = answers.getString("title");
+				year = answers.getInt("year");
+				language = answers.getString("language");
+				weight = answers.getInt("weight");
+
+				System.out.println (title + " " + year + " " + language + " " + weight);
+			}
+			answers.close();
+			querySt.close();
 		}
 		catch (Exception e) {
 			System.out.println(e.toString());
